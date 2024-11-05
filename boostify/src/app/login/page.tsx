@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 type ValidationResult = {
   isValid: boolean;
@@ -58,20 +59,25 @@ export function validateFields(email: string, password: string): ValidationResul
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<{
-    email?: string;
-    password?: string;
-  }>({ email: "", password: "" });
+  const [erro, setErro] = useState("");
+  const [sucesso, setSucesso] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setErro("");
+    setSucesso(false);
+
+    if (!email || !password) {
+      setErro("Por favor, preencha todos os campos.");
+      return;
+    }
+
     const validationResult = validateFields(email, password);
     if (!validationResult.isValid) {
-      setErrors(validationResult.errors);
+      setErro(validationResult.errors.email || validationResult.errors.password || "");
     } else {
-      // Prosseguir com o login (por exemplo, chamar uma API)
       console.log("Login bem-sucedido!");
-      alert("Login bem-sucedido!");
+      setSucesso(true);
     }
   };
 
@@ -89,13 +95,11 @@ export default function LoginPage() {
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
-                  type="email"
+                  type="text"
                   placeholder="seu@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
                 />
-                {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
@@ -104,18 +108,26 @@ export default function LoginPage() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
                 />
-                {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
               </div>
             </div>
             <Button className="mt-6 w-full" type="submit">Entrar</Button>
+            {erro && (
+              <Alert variant="destructive" className="mt-4">
+                <AlertDescription>{erro}</AlertDescription>
+              </Alert>
+            )}
+            {sucesso && (
+              <Alert className="mt-4 border-green-500">
+                <AlertDescription className="text-green-500">Login realizado com sucesso!</AlertDescription>
+              </Alert>
+            )}
           </form>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
           <div className="text-sm text-center text-gray-600">
             Não tem uma conta?{' '}
-            <Link href="/signup" className="text-blue-600 hover:underline">
+            <Link href="/cadastro" className="text-blue-600 hover:underline">
               Inscrever-se
             </Link>
           </div>
