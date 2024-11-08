@@ -67,7 +67,7 @@ function TaskItem({ task, onEdit, onDelete, onToggle }: {
   );
 }
 
-export default function Component() {
+export default function CadastroDeTarefa() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [dailyTasks, setDailyTasks] = useState<Task[]>([])
   const [editingTask, setEditingTask] = useState<Task | null>(null)
@@ -131,32 +131,10 @@ export default function Component() {
   const progressPercentage = totalTasks > 0 ? (completedTasksCount / totalTasks) * 100 : 0
 
   return (
-    <div className="min-h-screen bg-background p-4">
-      {/* <header className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Minha Lista de Tarefas</h1>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
-              <MoreVertical className="h-4 w-4" />
-              <span className="sr-only">Abrir menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem>
-              <Home className="mr-2 h-4 w-4" />
-              <span>Início</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Calendar className="mr-2 h-4 w-4" />
-              <span>Calendário</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Configurações</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </header> */}
+    
+    <div className=" max-w-[800px] mx-auto min-h-screen bg-background p-4">
+
+      <header className="text-3xl max-w-4xl mx-auto font-bold mb-2">Minha Lista de Tarefas</header>
 
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">

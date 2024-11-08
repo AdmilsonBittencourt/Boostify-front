@@ -1,7 +1,11 @@
-export default function home(){
+import HeaderHome from "@/components/headerHome";
+import CadastroDeTarefa from "../cadastro-de-tarefa/page";
+
+export default function HomePage(){
     return (
-        <>
-            <h1>home!!!</h1>
-        </>
+        <div className="h-screen overflow-hidden">
+            <HeaderHome />
+            <CadastroDeTarefa />
+        </div>
     );
 }
