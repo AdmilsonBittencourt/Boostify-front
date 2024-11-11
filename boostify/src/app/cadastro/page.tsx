@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useRouter } from 'next/navigation'
+import User from '@/models/user'
+import { Eye, EyeOff } from "lucide-react"
 
 export default function Component() {
   const router = useRouter()
@@ -16,6 +18,8 @@ export default function Component() {
   const [confirmeSenha, setConfirmeSenha] = useState('')
   const [erro, setErro] = useState('')
   const [sucesso, setSucesso] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const validarSenha = (senha: string) => {
     const regras = {
@@ -29,7 +33,7 @@ export default function Component() {
     return regras;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setErro('')
     setSucesso(false)
@@ -51,11 +55,23 @@ export default function Component() {
       return
     }
 
-    // Aqui você normalmente enviaria os dados para o servidor
-    console.log('Dados do formulário:', { nome, email, senha })
-    setSucesso(true)
-    
-    // Adiciona um pequeno delay para mostrar a mensagem de sucesso antes de redirecionar
+    const user = User.createWithoutId(nome, email, senha);
+    console.log('Dados do formulário:', user)
+
+    await fetch('http://localhost:8080/users', {
+      method: 'POST', 
+      headers: {
+          'Content-Type': 'application/json'
+      },
+      mode: 'cors',
+      credentials: 'include',
+      body: JSON.stringify(user)
+      }).then((res) => {
+          console.log(res)
+      }).catch((e) => {
+          console.log(e)
+      })
+
     setTimeout(() => {
       router.push('/login')
     }, 500)
@@ -91,21 +107,43 @@ export default function Component() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="senha">Senha</Label>
-              <Input 
-                id="senha" 
-                type="password" 
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-              />
+              <div className="relative">
+                <Input 
+                  id="senha" 
+                  type={showPassword ? "text" : "password"}
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirme-senha">Confirme a Senha</Label>
-              <Input 
-                id="confirme-senha" 
-                type="password" 
-                value={confirmeSenha}
-                onChange={(e) => setConfirmeSenha(e.target.value)}
-              />
+              <div className="relative">
+                <Input 
+                  id="confirme-senha" 
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmeSenha}
+                  onChange={(e) => setConfirmeSenha(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-2 top-1/2 -translate-y-1/2"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </Button>
+              </div>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col">
