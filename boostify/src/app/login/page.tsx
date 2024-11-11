@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Eye, EyeOff } from "lucide-react";
 
 type ValidationResult = {
   isValid: boolean;
@@ -16,7 +17,7 @@ type ValidationResult = {
   };
 };
 
-export function validateFields(email: string, password: string): ValidationResult {
+export function validateFields(email: string): ValidationResult {
   const result: ValidationResult = {
     isValid: true,
     errors: {},
@@ -32,27 +33,6 @@ export function validateFields(email: string, password: string): ValidationResul
     result.errors.email = "Formato de email inválido";
   }
 
-  // Validação de senha
-  if (!password) {
-    result.isValid = false;
-    result.errors.password = "Senha é obrigatória";
-  } else if (password.length < 8) {
-    result.isValid = false;
-    result.errors.password = "A senha deve ter pelo menos 8 caracteres";
-  } else if (!/[A-Z]/.test(password)) {
-    result.isValid = false;
-    result.errors.password = "A senha deve conter pelo menos uma letra maiúscula";
-  } else if (!/[a-z]/.test(password)) {
-    result.isValid = false;
-    result.errors.password = "A senha deve conter pelo menos uma letra minúscula";
-  } else if (!/[0-9]/.test(password)) {
-    result.isValid = false;
-    result.errors.password = "A senha deve conter pelo menos um número";
-  } else if (!/[!@#$%^&*]/.test(password)) {
-    result.isValid = false;
-    result.errors.password = "A senha deve conter pelo menos um caractere especial (!@#$%^&*)";
-  }
-
   return result;
 }
 
@@ -60,26 +40,37 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [erro, setErro] = useState("");
-  const [sucesso, setSucesso] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErro("");
-    setSucesso(false);
 
     if (!email || !password) {
       setErro("Por favor, preencha todos os campos.");
       return;
     }
 
-    const validationResult = validateFields(email, password);
+    const validationResult = validateFields(email);
     if (!validationResult.isValid) {
-      setErro(validationResult.errors.email || validationResult.errors.password || "");
-    } else {
-      console.log("Login bem-sucedido!");
-      setSucesso(true);
-    }
+      setErro(validationResult.errors.email || "");
+    } 
+
+    console.log({ email, hashedPassword: password });
+
+    const token = await fetch(`http://localhost:8080/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, hashedPassword: password }),
+      credentials: "include",
+    });
+    
+    console.log(token.json());
+    console.log("Login bem-sucedido!");    
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -103,23 +94,33 @@ export default function LoginPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-2 top-1/2 -translate-y-1/2"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
             <Button className="mt-6 w-full" type="submit">Entrar</Button>
             {erro && (
               <Alert variant="destructive" className="mt-4">
                 <AlertDescription>{erro}</AlertDescription>
-              </Alert>
-            )}
-            {sucesso && (
-              <Alert className="mt-4 border-green-500">
-                <AlertDescription className="text-green-500">Login realizado com sucesso!</AlertDescription>
               </Alert>
             )}
           </form>
