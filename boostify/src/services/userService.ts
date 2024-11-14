@@ -1,47 +1,29 @@
 import User, { ILogin } from "@/models/user";
+import api from "./axiosConfig";
 
-export class UserService {
-  private baseUrl = 'http://localhost:8080';
 
-  async createUser(userData: User): Promise<unknown> {
-    try {
-      const response = await fetch(`${this.baseUrl}/users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
+export const login = async (loginData: ILogin) => {
+  try {
+    const response = await api.post('/auth/login', loginData);
+    
+    localStorage.setItem('token', response.data.token);
+    localStorage.setItem('userId', response.data.id);
 
-      if (!response.ok) {
-        throw new Error(`Erro ao criar usuário: ${response.statusText}`);
-      }
+    return response.data;
+  } catch (error: unknown) {
 
-      return await response.json();
-    } catch (error) {
-      console.error('Erro ao criar usuário:', error);
-      throw error;
-    }
+    // depois criar uma função para tratar o erro de forma mais adequada
+    console.error('Erro ao fazer login:', error);
+    throw new Error('Erro ao fazer login');
   }
+};
 
-  async login(userData: ILogin): Promise<unknown> {
-    try {
-      const response = await fetch(`${this.baseUrl}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Erro ao logar: ${response.statusText}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Erro ao logar:', error);
-      throw error;
-    }
+export const register = async (userData: User) => {
+  try {
+    const response = await api.post('/users', userData);
+    return response.data;
+  } catch (error: unknown) {
+    console.error('Erro ao registrar usuário:', error);
+    throw new Error('Erro ao registrar usuário');
   }
-}
+};
