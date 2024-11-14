@@ -6,12 +6,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useRouter } from 'next/navigation'
+// import { useRouter } from 'next/navigation'
 import User from '@/models/user'
 import { Eye, EyeOff } from "lucide-react"
+import { register } from '@/services/userService'
 
 export default function Component() {
-  const router = useRouter()
+  // const router = useRouter()
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
@@ -55,26 +56,12 @@ export default function Component() {
       return
     }
 
-    const user = User.createWithoutId(nome, email, senha);
+    const user = new User(nome, email, senha);
     console.log('Dados do formulário:', user)
 
-    await fetch('http://localhost:8080/users', {
-      method: 'POST', 
-      headers: {
-          'Content-Type': 'application/json'
-      },
-      mode: 'cors',
-      credentials: 'include',
-      body: JSON.stringify(user)
-      }).then((res) => {
-          console.log(res)
-      }).catch((e) => {
-          console.log(e)
-      })
+    const data = await register(user);
 
-    setTimeout(() => {
-      router.push('/login')
-    }, 500)
+    console.log(data);
   }
 
   return (

@@ -8,6 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff } from "lucide-react";
+import { login } from "@/services/userService";
+import { useRouter } from 'next/navigation'
 
 type ValidationResult = {
   isValid: boolean;
@@ -37,6 +39,7 @@ export function validateFields(email: string): ValidationResult {
 }
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [erro, setErro] = useState("");
@@ -56,21 +59,11 @@ export default function LoginPage() {
       setErro(validationResult.errors.email || "");
     } 
 
-    console.log({ email, hashedPassword: password });
+    await login({ email, password});
 
-    const token = await fetch(`http://localhost:8080/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, hashedPassword: password }),
-      credentials: "include",
-    });
+    router.push('/');
     
-    console.log(token.json());
-    console.log("Login bem-sucedido!");    
   };
-
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">

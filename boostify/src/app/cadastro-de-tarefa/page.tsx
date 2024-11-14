@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -73,17 +73,17 @@ export default function CadastroDeTarefa() {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  useEffect(() => {
-    const storedTasks = localStorage.getItem('tasks')
-    const storedDailyTasks = localStorage.getItem('dailyTasks')
-    if (storedTasks) setTasks(JSON.parse(storedTasks))
-    if (storedDailyTasks) setDailyTasks(JSON.parse(storedDailyTasks))
-  }, [])
+  // useEffect(() => {
+  //   const storedTasks = localStorage.getItem('tasks')
+  //   const storedDailyTasks = localStorage.getItem('dailyTasks')
+  //   if (storedTasks) setTasks(JSON.parse(storedTasks))
+  //   if (storedDailyTasks) setDailyTasks(JSON.parse(storedDailyTasks))
+  // }, [])
 
-  useEffect(() => {
-    localStorage.setItem('tasks', JSON.stringify(tasks))
-    localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks))
-  }, [tasks, dailyTasks])
+  // useEffect(() => {
+  //   localStorage.setItem('tasks', JSON.stringify(tasks))
+  //   localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks))
+  // }, [tasks, dailyTasks])
 
   const addOrUpdateTask = (task: Task) => {
     if (!task.title.trim()) {
