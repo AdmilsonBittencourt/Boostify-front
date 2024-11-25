@@ -16,7 +16,7 @@ export const getAllTasksByUserId = async (userId: number) => {
  * @param task Dados da tarefa a ser criada.
  * @returns A tarefa criada.
  */
-export const createTask = async (task: { userId: number; title: string; description?: string; dueDate?: string; priority?: string }) => {
+export const createTask = async (task: { idUser: number; title: string; description?: string; priority?: string }) => {
     try {
         const response = await api.post('/tasks', task);
         return response.data;

@@ -176,15 +176,14 @@ export default function CadastroDeTarefa() {
               <form onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
                 e.preventDefault()
                 const formData = new FormData(e.currentTarget)
-                const newTask: Task = {
-                  id: editingTask?.id || 0,
-                  title: (formData.get('title') as string)?.trim() || '',
-                  description: (formData.get('description') as string)?.trim() || '',
-                  prioridade: (formData.get('prioridade') as string) || 'baixa',
-                  completed: editingTask?.completed || false,
-                  isDaily: formData.get('isDaily') === 'on'
+                const userIdString = localStorage.getItem("idUser")
+                const newTask= {
+                  idUser: userIdString ? parseInt(userIdString) : 0,
+                  title: (formData.get('title') as string)?.trim(),
+                  description: (formData.get('description') as string)?.trim(),
+                  priority: (formData.get('prioridade') as string),
                 }
-                addOrUpdateTask(newTask)
+                createTask(newTask)
               }}>
                 <div className="space-y-4">
                   <div>
