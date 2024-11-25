@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
-import { getAllTasksByUserId } from "@/services/tasksService"
+import { createTask, getAllTasksByUserId } from "@/services/tasksService"
 
 interface Task {
   id: number;
@@ -85,6 +85,8 @@ export default function CadastroDeTarefa() {
         .catch(error => {
           console.error("Erro ao buscar a task:", error);
         });
+      
+      // createTask()
     
   }, []);
 
