@@ -4,7 +4,9 @@ const api = axios.create({
   baseURL: 'https://boostify-back-end.up.railway.app',
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
+  withCredentials: true
 });
 
 api.interceptors.request.use(
@@ -13,6 +15,8 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    config.headers['Content-Type'] = 'application/json';
+    config.headers['Accept'] = 'application/json';
     return config;
   },
   (error) => {
