@@ -1,7 +1,7 @@
 
 export interface ILogin {
     email: string;
-    hashedPassword: string;
+    password: string;
 }
 
 export default class User {
