@@ -19,31 +19,31 @@ type ValidationResult = {
   };
 };
 
-export function validateFields(email: string): ValidationResult {
-  const result: ValidationResult = {
-    isValid: true,
-    errors: {},
-  };
-
-  // Validação de email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!email) {
-    result.isValid = false;
-    result.errors.email = "Email é obrigatório";
-  } else if (!emailRegex.test(email)) {
-    result.isValid = false;
-    result.errors.email = "Formato de email inválido";
-  }
-
-  return result;
-}
-
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [erro, setErro] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const validateFields = (email: string): ValidationResult => {
+    const result: ValidationResult = {
+      isValid: true,
+      errors: {},
+    };
+  
+    // Validação de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      result.isValid = false;
+      result.errors.email = "Email é obrigatório";
+    } else if (!emailRegex.test(email)) {
+      result.isValid = false;
+      result.errors.email = "Formato de email inválido";
+    }
+  
+    return result;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
