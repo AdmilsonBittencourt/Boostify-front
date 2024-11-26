@@ -61,8 +61,7 @@ export default function LoginPage() {
 
     await login({ email, password});
 
-    router.push('/');
-    
+    router.push('/home');    
   };
 
   return (

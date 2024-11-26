@@ -27,3 +27,25 @@ export const register = async (userData: User) => {
     throw new Error('Erro ao registrar usuário');
   }
 };
+
+export const updateUser = async (id: number, userData: User) => {
+
+  try {
+    await api.put(`/users/${id}`, userData);
+    
+  }catch (error: unknown) {
+    console.error('Erro ao atualizar o usuário:', error);
+    throw new Error('Erro ao atualizar o usuário');
+  }
+};
+
+export const getUserById = async (id: number) => {
+
+  try {
+    const response = await api.get(`/users/${id}`);
+    return response.data;
+  } catch (error: unknown) {
+    console.error('Erro ao budcar o usuário:', error);
+    throw new Error('Erro ao buscar o usuário');
+  }
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
+import { createTask, getAllTasksByUserId } from "@/services/tasksService"
 
 interface Task {
   id: number;
@@ -72,6 +73,22 @@ export default function CadastroDeTarefa() {
   const [dailyTasks, setDailyTasks] = useState<Task[]>([])
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+  useEffect(() => {
+    // Busca as tasks somente no cliente
+    
+      getAllTasksByUserId(1)
+        .then(response => {
+          console.log(response);
+          setTasks(response); // ou a lógica apropriada para setar as tasks
+        })
+        .catch(error => {
+          console.error("Erro ao buscar a task:", error);
+        });
+      
+      // createTask()
+    
+  }, []);
 
   // useEffect(() => {
   //   const storedTasks = localStorage.getItem('tasks')
@@ -159,15 +176,14 @@ export default function CadastroDeTarefa() {
               <form onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
                 e.preventDefault()
                 const formData = new FormData(e.currentTarget)
-                const newTask: Task = {
-                  id: editingTask?.id || 0,
-                  title: (formData.get('title') as string)?.trim() || '',
-                  description: (formData.get('description') as string)?.trim() || '',
-                  prioridade: (formData.get('prioridade') as string) || 'baixa',
-                  completed: editingTask?.completed || false,
-                  isDaily: formData.get('isDaily') === 'on'
+                const userIdString = localStorage.getItem("idUser")
+                const newTask= {
+                  idUser: userIdString ? parseInt(userIdString) : 0,
+                  title: (formData.get('title') as string)?.trim(),
+                  description: (formData.get('description') as string)?.trim(),
+                  priority: (formData.get('prioridade') as string),
                 }
-                addOrUpdateTask(newTask)
+                createTask(newTask)
               }}>
                 <div className="space-y-4">
                   <div>
