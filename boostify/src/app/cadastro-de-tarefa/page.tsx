@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
-import { createTask, getAllTasksByUserId } from "@/services/tasksService"
+import { getAllTasksByUserId } from "@/services/tasksService"
 
 interface Task {
   id: number;
@@ -102,27 +102,33 @@ export default function CadastroDeTarefa() {
   //   localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks))
   // }, [tasks, dailyTasks])
 
-  // const addOrUpdateTask = (task: Task) => {
-  //   if (!task.title.trim()) {
-  //     return;
-  //   }
+  const addOrUpdateTask = (task: Task) => {
+    if (!task.title.trim()) {
+      return;
+    }
     
-  //   if (task.isDaily) {
-  //     if (task.id) {
-  //       setDailyTasks(dailyTasks.map(t => t.id === task.id ? task : t))
-  //     } else {
-  //       setDailyTasks([...dailyTasks, { ...task, id: Date.now() }])
-  //     }
-  //   } else {
-  //     if (task.id) {
-  //       setTasks(tasks.map(t => t.id === task.id ? task : t))
-  //     } else {
-  //       setTasks([...tasks, { ...task, id: Date.now() }])
-  //     }
-  //   }
-  //   setIsDialogOpen(false)
-  //   setEditingTask(null)
-  // }
+    const taskWithId = {
+      ...task,
+      id: task.id || Date.now()
+    };
+    
+    if (taskWithId.isDaily) {
+      setDailyTasks(prev => 
+        taskWithId.id && prev.some(t => t.id === taskWithId.id)
+          ? prev.map(t => t.id === taskWithId.id ? taskWithId : t)
+          : [...prev, taskWithId]
+      );
+    } else {
+      setTasks(prev => 
+        taskWithId.id && prev.some(t => t.id === taskWithId.id)
+          ? prev.map(t => t.id === taskWithId.id ? taskWithId : t)
+          : [...prev, taskWithId]
+      );
+    }
+    
+    setIsDialogOpen(false);
+    setEditingTask(null);
+  };
 
   const deleteTask = (id: number) => {
     setTasks(tasks.filter(task => task.id !== id))
@@ -176,14 +182,22 @@ export default function CadastroDeTarefa() {
               <form onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
                 e.preventDefault()
                 const formData = new FormData(e.currentTarget)
-                const userIdString = localStorage.getItem("idUser")
-                const newTask= {
-                  idUser: userIdString ? parseInt(userIdString) : 0,
+                // const userIdString = localStorage.getItem("idUser")
+                // const newTask= {
+                //   idUser: userIdString ? parseInt(userIdString) : 0,
+                //   title: (formData.get('title') as string)?.trim(),
+                //   description: (formData.get('description') as string)?.trim(),
+                //   priority: (formData.get('prioridade') as string),
+                // }
+                const newTask: Task = {
+                  id: editingTask?.id || Date.now(),
                   title: (formData.get('title') as string)?.trim(),
                   description: (formData.get('description') as string)?.trim(),
-                  priority: (formData.get('prioridade') as string),
-                }
-                createTask(newTask)
+                  prioridade: (formData.get('prioridade') as string)?.trim(),
+                  completed: false,
+                  isDaily: formData.get('isDaily') === 'on',
+                };
+                addOrUpdateTask(newTask)
               }}>
                 <div className="space-y-4">
                   <div>
