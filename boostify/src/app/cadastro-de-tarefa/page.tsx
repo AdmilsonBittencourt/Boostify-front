@@ -102,27 +102,27 @@ export default function CadastroDeTarefa() {
   //   localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks))
   // }, [tasks, dailyTasks])
 
-  const addOrUpdateTask = (task: Task) => {
-    if (!task.title.trim()) {
-      return;
-    }
+  // const addOrUpdateTask = (task: Task) => {
+  //   if (!task.title.trim()) {
+  //     return;
+  //   }
     
-    if (task.isDaily) {
-      if (task.id) {
-        setDailyTasks(dailyTasks.map(t => t.id === task.id ? task : t))
-      } else {
-        setDailyTasks([...dailyTasks, { ...task, id: Date.now() }])
-      }
-    } else {
-      if (task.id) {
-        setTasks(tasks.map(t => t.id === task.id ? task : t))
-      } else {
-        setTasks([...tasks, { ...task, id: Date.now() }])
-      }
-    }
-    setIsDialogOpen(false)
-    setEditingTask(null)
-  }
+  //   if (task.isDaily) {
+  //     if (task.id) {
+  //       setDailyTasks(dailyTasks.map(t => t.id === task.id ? task : t))
+  //     } else {
+  //       setDailyTasks([...dailyTasks, { ...task, id: Date.now() }])
+  //     }
+  //   } else {
+  //     if (task.id) {
+  //       setTasks(tasks.map(t => t.id === task.id ? task : t))
+  //     } else {
+  //       setTasks([...tasks, { ...task, id: Date.now() }])
+  //     }
+  //   }
+  //   setIsDialogOpen(false)
+  //   setEditingTask(null)
+  // }
 
   const deleteTask = (id: number) => {
     setTasks(tasks.filter(task => task.id !== id))
