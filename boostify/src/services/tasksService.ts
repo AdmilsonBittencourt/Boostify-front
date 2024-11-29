@@ -50,10 +50,25 @@ export const alterTask = async (taskId: number, updatedTask: { title?: string; d
  */
 export const alterStatusTask = async (taskId: number, status: string) => {
     try {
-        const response = await api.patch(`/tasks/${taskId}/status`, { status });
+        const response = await api.put(`/tasks/${taskId}/status`, status);
         return response.data;
     } catch (error: unknown) {
         console.error('Erro ao alterar o status da task:', error);
         throw new Error('Erro ao alterar o status da task');
+    }
+};
+
+/**
+ * Deleta uma tarefa existente pelo ID.
+ * @param taskId ID da tarefa a ser deletada.
+ * @returns A resposta da API.
+ */
+export const deleteTask = async (taskId: number) => {
+    try {
+        const response = await api.delete(`/tasks/${taskId}`);
+        return response.data;
+    } catch (error: unknown) {
+        console.error('Erro ao deletar a task:', error);
+        throw new Error('Erro ao deletar a task');
     }
 };

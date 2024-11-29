@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
-import { getAllTasksByUserId } from "@/services/tasksService"
+import { getAllTasksByUserId, createTask, deleteTask as deleteTaskService, alterStatusTask } from "@/services/tasksService"
 
 interface Task {
   id: number;
@@ -20,6 +20,13 @@ interface Task {
   prioridade: string;
   completed: boolean;
   isDaily: boolean;
+}
+
+// Definindo a enumeração para os status das tarefas
+enum TaskStatus {
+    COMPLETED = "COMPLETED",
+    PENDING = "PENDING",
+    IN_PROGRESS = "IN_PROGRESS",
 }
 
 function TaskItem({ task, onEdit, onDelete, onToggle }: {
@@ -75,74 +82,82 @@ export default function CadastroDeTarefa() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   useEffect(() => {
-    // Busca as tasks somente no cliente
-    
-      getAllTasksByUserId(1)
-        .then(response => {
-          console.log(response);
-          setTasks(response); // ou a lógica apropriada para setar as tasks
-        })
-        .catch(error => {
-          console.error("Erro ao buscar a task:", error);
-        });
-      
-      // createTask()
-    
+    const userIdString = localStorage.getItem("userId");
+    const userId = userIdString ? parseInt(userIdString) : 1;
+
+    getAllTasksByUserId(userId)
+      .then(response => {
+        console.log(response);
+        setTasks(response);
+      })
+      .catch(error => {
+        console.error("Erro ao buscar a task:", error);
+      });
   }, []);
 
-  // useEffect(() => {
-  //   const storedTasks = localStorage.getItem('tasks')
-  //   const storedDailyTasks = localStorage.getItem('dailyTasks')
-  //   if (storedTasks) setTasks(JSON.parse(storedTasks))
-  //   if (storedDailyTasks) setDailyTasks(JSON.parse(storedDailyTasks))
-  // }, [])
-
-  // useEffect(() => {
-  //   localStorage.setItem('tasks', JSON.stringify(tasks))
-  //   localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks))
-  // }, [tasks, dailyTasks])
-
-  const addOrUpdateTask = (task: Task) => {
+  const addOrUpdateTask = async (task: Task) => {
     if (!task.title.trim()) {
       return;
     }
     
-    const taskWithId = {
-      ...task,
-      id: task.id || Date.now()
+    const priorityMap: { [key: string]: string } = {
+      baixa: 'LOW',
+      media: 'AVERAGE',
+      alta: 'HIGH',
     };
-    
-    if (taskWithId.isDaily) {
-      setDailyTasks(prev => 
-        taskWithId.id && prev.some(t => t.id === taskWithId.id)
-          ? prev.map(t => t.id === taskWithId.id ? taskWithId : t)
-          : [...prev, taskWithId]
-      );
-    } else {
-      setTasks(prev => 
-        taskWithId.id && prev.some(t => t.id === taskWithId.id)
-          ? prev.map(t => t.id === taskWithId.id ? taskWithId : t)
-          : [...prev, taskWithId]
-      );
+
+    const taskWithId = {
+      idUser: 1,
+      title: task.title,
+      description: task.description,
+      priority: priorityMap[task.prioridade] || 'LOW',
+    };
+
+    try {
+      const createdTask = await createTask(taskWithId);
+      setTasks(prev => [...prev, createdTask]);
+    } catch (error) {
+      console.error("Erro ao criar a task:", error);
     }
-    
+
     setIsDialogOpen(false);
     setEditingTask(null);
   };
 
-  const deleteTask = (id: number) => {
-    setTasks(tasks.filter(task => task.id !== id))
-    setDailyTasks(dailyTasks.filter(task => task.id !== id))
-  }
+  const deleteTask = async (id: number) => {
+    try {
+      await deleteTaskService(id);
+      setTasks(tasks.filter(task => task.id !== id));
+      setDailyTasks(dailyTasks.filter(task => task.id !== id));
+    } catch (error) {
+      console.error("Erro ao deletar a task:", error);
+    }
+  };
 
-  const toggleTask = (id: number) => {
-    setTasks(tasks.map(task => 
-      task.id === id ? { ...task, completed: !task.completed } : task
-    ))
-    setDailyTasks(dailyTasks.map(task => 
-      task.id === id ? { ...task, completed: !task.completed } : task
-    ))
-  }
+  const toggleTask = async (id: number) => {
+    const updatedTask = tasks.find(task => task.id === id);
+    if (updatedTask) {
+        // Mapeando o status atual para a nova enumeração
+        let newStatus: TaskStatus;
+        if (updatedTask.completed) {
+            newStatus = TaskStatus.COMPLETED; // Se já está completo, mantém como COMPLETED
+        } else {
+            newStatus = TaskStatus.PENDING; // Se não está completo, muda para PENDING
+        }
+
+        try {
+            await alterStatusTask(id, newStatus); // Chama a função para alterar o status
+            setTasks(tasks.map(task => 
+                task.id === id ? { ...task, status: newStatus === TaskStatus.COMPLETED } : task
+            ));
+            setDailyTasks(dailyTasks.map(task => 
+                task.id === id ? { ...task, status: newStatus === TaskStatus.COMPLETED } : task
+            ));
+        } catch (error) {
+            console.error("Erro ao alterar o status da task:", error);
+        }
+    }
+  };
 
   const resetDailyTasks = () => {
     setDailyTasks(dailyTasks.map(task => ({ ...task, completed: false })))
