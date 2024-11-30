@@ -20,6 +20,7 @@ interface Task {
   prioridade: string;
   completed: boolean;
   isDaily: boolean;
+  status: string;
 }
 
 // Definindo a enumeração para os status das tarefas
@@ -35,6 +36,13 @@ function TaskItem({ task, onEdit, onDelete, onToggle }: {
   onDelete: (id: number) => void;
   onToggle: (id: number) => void;
 }) {
+
+  if(task.status === TaskStatus.COMPLETED) {
+    task.completed = true;
+  }else {
+    task.completed = false;
+  }
+
   return (
     <div className={`flex items-center justify-between p-4 border rounded-lg ${task.completed ? 'bg-muted' : ''}`}>
       <div className="flex items-center space-x-4">
@@ -81,6 +89,9 @@ export default function CadastroDeTarefa() {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
+  const userIdString = localStorage.getItem("userId");
+    const userId = userIdString ? parseInt(userIdString) : 1;
+
   useEffect(() => {
     const userIdString = localStorage.getItem("userId");
     const userId = userIdString ? parseInt(userIdString) : 1;
@@ -107,10 +118,11 @@ export default function CadastroDeTarefa() {
     };
 
     const taskWithId = {
-      idUser: 1,
+      idUser: userId,
       title: task.title,
       description: task.description,
       priority: priorityMap[task.prioridade] || 'LOW',
+      status: task.status
     };
 
     try {
@@ -140,18 +152,19 @@ export default function CadastroDeTarefa() {
         // Mapeando o status atual para a nova enumeração
         let newStatus: TaskStatus;
         if (updatedTask.completed) {
-            newStatus = TaskStatus.COMPLETED; // Se já está completo, mantém como COMPLETED
+            newStatus = TaskStatus.PENDING; // Se já está completo, muda para PENDING
         } else {
-            newStatus = TaskStatus.PENDING; // Se não está completo, muda para PENDING
+            newStatus = TaskStatus.COMPLETED; // Se não está completo, muda para COMPLETED
         }
 
         try {
+            console.log(id, newStatus);
             await alterStatusTask(id, newStatus); // Chama a função para alterar o status
             setTasks(tasks.map(task => 
-                task.id === id ? { ...task, status: newStatus === TaskStatus.COMPLETED } : task
+                task.id === id ? { ...task, completed: newStatus === TaskStatus.COMPLETED, status: newStatus } : task
             ));
             setDailyTasks(dailyTasks.map(task => 
-                task.id === id ? { ...task, status: newStatus === TaskStatus.COMPLETED } : task
+                task.id === id ? { ...task, completed: newStatus === TaskStatus.COMPLETED, status: newStatus } : task
             ));
         } catch (error) {
             console.error("Erro ao alterar o status da task:", error);
@@ -211,6 +224,7 @@ export default function CadastroDeTarefa() {
                   prioridade: (formData.get('prioridade') as string)?.trim(),
                   completed: false,
                   isDaily: formData.get('isDaily') === 'on',
+                  status: ''
                 };
                 addOrUpdateTask(newTask)
               }}>

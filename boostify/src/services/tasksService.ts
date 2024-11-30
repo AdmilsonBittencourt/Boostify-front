@@ -50,7 +50,8 @@ export const alterTask = async (taskId: number, updatedTask: { title?: string; d
  */
 export const alterStatusTask = async (taskId: number, status: string) => {
     try {
-        const response = await api.put(`/tasks/${taskId}/status`, status);
+        console.log({status: status});
+        const response = await api.put(`/tasks/status/${taskId}`, {status: status});
         return response.data;
     } catch (error: unknown) {
         console.error('Erro ao alterar o status da task:', error);
