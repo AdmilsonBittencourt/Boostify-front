@@ -16,7 +16,7 @@ export const getAllTasksByUserId = async (userId: number) => {
  * @param task Dados da tarefa a ser criada.
  * @returns A tarefa criada.
  */
-export const createTask = async (task: { idUser: number; title: string; description?: string; priority?: string }) => {
+export const createTask = async (task: { idUser: number; title: string; description?: string; priority?: string, isDaily: boolean }) => {
     try {
         const response = await api.post('/tasks', task);
         return response.data;
@@ -32,7 +32,7 @@ export const createTask = async (task: { idUser: number; title: string; descript
  * @param updatedTask Dados atualizados da tarefa.
  * @returns A tarefa atualizada.
  */
-export const alterTask = async (taskId: number, updatedTask: { title?: string; description?: string; dueDate?: string; priority?: string }) => {
+export const alterTask = async (taskId: number, updatedTask: { idUser: number; title: string; description?: string; priority?: string, isDaily: boolean }) => {
     try {
         const response = await api.put(`/tasks/${taskId}`, updatedTask);
         return response.data;
@@ -50,10 +50,26 @@ export const alterTask = async (taskId: number, updatedTask: { title?: string; d
  */
 export const alterStatusTask = async (taskId: number, status: string) => {
     try {
-        const response = await api.patch(`/tasks/${taskId}/status`, { status });
+        console.log({status: status});
+        const response = await api.put(`/tasks/status/${taskId}`, {status: status});
         return response.data;
     } catch (error: unknown) {
         console.error('Erro ao alterar o status da task:', error);
         throw new Error('Erro ao alterar o status da task');
+    }
+};
+
+/**
+ * Deleta uma tarefa existente pelo ID.
+ * @param taskId ID da tarefa a ser deletada.
+ * @returns A resposta da API.
+ */
+export const deleteTask = async (taskId: number) => {
+    try {
+        const response = await api.delete(`/tasks/${taskId}`);
+        return response.data;
+    } catch (error: unknown) {
+        console.error('Erro ao deletar a task:', error);
+        throw new Error('Erro ao deletar a task');
     }
 };

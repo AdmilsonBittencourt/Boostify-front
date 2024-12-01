@@ -1,9 +1,20 @@
+'use client';
+
 import { MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { User, Home, Settings } from "lucide-react";
+import { User, Home, LogOut } from "lucide-react";
+import { useRouter } from 'next/navigation';
 
 export default function HeaderHome(){
+    const router = useRouter();
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userId');
+        router.push('/login');
+    };
+
     return (
         <header className="flex justify-between items-center mb-6 px-5 pt-2">
             <h1 className="text-5xl font-bold">Boostify</h1>
@@ -15,17 +26,17 @@ export default function HeaderHome(){
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/home')}>
                         <Home className="mr-2 h-4 w-4" />
-                        <span>Início</span>
+                        <span>Início</span>   
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/perfil')}>
                         <User className="mr-2 h-4 w-4" />
                         <span>Perfil</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
-                        <Settings className="mr-2 h-4 w-4" />
-                        <span>Configurações</span>
+                    <DropdownMenuItem onClick={handleLogout} className="flex items-center">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Logout</span>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>

@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
-import { getAllTasksByUserId } from "@/services/tasksService"
+import { getAllTasksByUserId, createTask, deleteTask as deleteTaskService, alterStatusTask, alterTask } from "@/services/tasksService"
 
 interface Task {
   id: number;
@@ -20,6 +20,14 @@ interface Task {
   prioridade: string;
   completed: boolean;
   isDaily: boolean;
+  status: string;
+}
+
+// Definindo a enumeração para os status das tarefas
+enum TaskStatus {
+    COMPLETED = "COMPLETED",
+    PENDING = "PENDING",
+    IN_PROGRESS = "IN_PROGRESS",
 }
 
 function TaskItem({ task, onEdit, onDelete, onToggle }: {
@@ -28,6 +36,13 @@ function TaskItem({ task, onEdit, onDelete, onToggle }: {
   onDelete: (id: number) => void;
   onToggle: (id: number) => void;
 }) {
+
+  if(task.status === TaskStatus.COMPLETED) {
+    task.completed = true;
+  }else {
+    task.completed = false;
+  }
+
   return (
     <div className={`flex items-center justify-between p-4 border rounded-lg ${task.completed ? 'bg-muted' : ''}`}>
       <div className="flex items-center space-x-4">
@@ -74,78 +89,120 @@ export default function CadastroDeTarefa() {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
+  const userIdString = localStorage.getItem("userId");
+    const userId = userIdString ? parseInt(userIdString) : 1;
+
   useEffect(() => {
-    // Busca as tasks somente no cliente
-    
-      getAllTasksByUserId(1)
-        .then(response => {
-          console.log(response);
-          setTasks(response); // ou a lógica apropriada para setar as tasks
-        })
-        .catch(error => {
-          console.error("Erro ao buscar a task:", error);
-        });
-      
-      // createTask()
-    
+    const userIdString = localStorage.getItem("userId");
+    const userId = userIdString ? parseInt(userIdString) : 1;
+
+    getAllTasksByUserId(userId)
+      .then(response => {
+        console.log(response);
+        const updatedTasks = response.map((task: { status: TaskStatus }) => ({
+          ...task,
+          completed: task.status === TaskStatus.COMPLETED
+        }));
+        setTasks(updatedTasks);
+      })
+      .catch(error => {
+        console.error("Erro ao buscar a task:", error);
+      });
   }, []);
 
-  // useEffect(() => {
-  //   const storedTasks = localStorage.getItem('tasks')
-  //   const storedDailyTasks = localStorage.getItem('dailyTasks')
-  //   if (storedTasks) setTasks(JSON.parse(storedTasks))
-  //   if (storedDailyTasks) setDailyTasks(JSON.parse(storedDailyTasks))
-  // }, [])
-
-  // useEffect(() => {
-  //   localStorage.setItem('tasks', JSON.stringify(tasks))
-  //   localStorage.setItem('dailyTasks', JSON.stringify(dailyTasks))
-  // }, [tasks, dailyTasks])
-
-  const addOrUpdateTask = (task: Task) => {
+  const addOrUpdateTask = async (task: Task) => {
     if (!task.title.trim()) {
-      return;
+        return;
     }
-    
+
+    const priorityMap: { [key: string]: string } = {
+        baixa: 'LOW',
+        media: 'AVERAGE',
+        alta: 'HIGH',
+    };
+
     const taskWithId = {
-      ...task,
-      id: task.id || Date.now()
+        idUser: userId,
+        title: task.title,
+        description: task.description,
+        priority: priorityMap[task.prioridade] || 'LOW',
+        status: task.status,
+        isDaily: task.isDaily
     };
     
-    if (taskWithId.isDaily) {
-      setDailyTasks(prev => 
-        taskWithId.id && prev.some(t => t.id === taskWithId.id)
-          ? prev.map(t => t.id === taskWithId.id ? taskWithId : t)
-          : [...prev, taskWithId]
-      );
-    } else {
-      setTasks(prev => 
-        taskWithId.id && prev.some(t => t.id === taskWithId.id)
-          ? prev.map(t => t.id === taskWithId.id ? taskWithId : t)
-          : [...prev, taskWithId]
-      );
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { status, ...taskWithoutStatus } = taskWithId;
+        if (editingTask) {
+            // Se estamos editando uma tarefa, chamamos alterTask
+            const updatedTask = await alterTask(editingTask.id, taskWithoutStatus);
+            setTasks(prev => prev.map(t => (t.id === updatedTask.id ? updatedTask : t)));
+        } else {
+            // Se estamos criando uma nova tarefa, chamamos createTask
+            const createdTask = await createTask(taskWithoutStatus);
+            setTasks(prev => [...prev, createdTask]);
+        }
+    } catch (error) {
+        console.error("Erro ao salvar a task:", error);
     }
-    
+
     setIsDialogOpen(false);
     setEditingTask(null);
   };
 
-  const deleteTask = (id: number) => {
-    setTasks(tasks.filter(task => task.id !== id))
-    setDailyTasks(dailyTasks.filter(task => task.id !== id))
-  }
+  const deleteTask = async (id: number) => {
+    try {
+      await deleteTaskService(id);
+      setTasks(tasks.filter(task => task.id !== id));
+      setDailyTasks(dailyTasks.filter(task => task.id !== id));
+    } catch (error) {
+      console.error("Erro ao deletar a task:", error);
+    }
+  };
 
-  const toggleTask = (id: number) => {
-    setTasks(tasks.map(task => 
-      task.id === id ? { ...task, completed: !task.completed } : task
-    ))
-    setDailyTasks(dailyTasks.map(task => 
-      task.id === id ? { ...task, completed: !task.completed } : task
-    ))
-  }
+  const toggleTask = async (id: number) => {
+    const updatedTask = tasks.find(task => task.id === id);
+    if (updatedTask) {
+        // Mapeando o status atual para a nova enumeração
+        let newStatus: TaskStatus;
+        if (updatedTask.completed) {
+            newStatus = TaskStatus.PENDING; // Se já está completo, muda para PENDING
+        } else {
+            newStatus = TaskStatus.COMPLETED; // Se não está completo, muda para COMPLETED
+        }
 
-  const resetDailyTasks = () => {
-    setDailyTasks(dailyTasks.map(task => ({ ...task, completed: false })))
+        try {
+            console.log(id, newStatus);
+            await alterStatusTask(id, newStatus); // Chama a função para alterar o status
+            setTasks(tasks.map(task => 
+                task.id === id ? { ...task, completed: newStatus === TaskStatus.COMPLETED, status: newStatus } : task
+            ));
+            setDailyTasks(dailyTasks.map(task => 
+                task.id === id ? { ...task, completed: newStatus === TaskStatus.COMPLETED, status: newStatus } : task
+            ));
+        } catch (error) {
+            console.error("Erro ao alterar o status da task:", error);
+        }
+    }
+  };
+
+  const resetDailyTasks = async () => {
+
+    // 2. Alterar o status das tasks que estão COMPLETED para PENDING e desmarcar o checkbox
+    const updatedTasks = await Promise.all(tasks.map(async task => {
+      if (task.completed) {
+          await alterStatusTask(task.id, TaskStatus.PENDING);
+          return { ...task, completed: false, status: TaskStatus.PENDING };
+      }
+      return task;
+  }));
+
+    // 1. Deletar todas as tasks que não possuem o atributo isDaily true
+    const tasksToDelete = tasks.filter(task => !task.isDaily);
+    await Promise.all(tasksToDelete.map(task => deleteTaskService(task.id)));
+
+    // Atualiza o estado com as tarefas filtradas e atualizadas
+    setTasks(updatedTasks.filter(task => task.isDaily)); // Mantém apenas as tarefas diárias
   }
 
   const allTasks = [...tasks, ...dailyTasks]
@@ -170,7 +227,10 @@ export default function CadastroDeTarefa() {
         <div className="flex justify-between items-center mb-4">
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => setEditingTask(null)}>
+              <Button onClick={() => {
+                setEditingTask(null);
+                setIsDialogOpen(true);
+              }}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Adicionar Tarefa
               </Button>
@@ -180,15 +240,8 @@ export default function CadastroDeTarefa() {
                 <DialogTitle>{editingTask ? 'Editar Tarefa' : 'Adicionar Nova Tarefa'}</DialogTitle>
               </DialogHeader>
               <form onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
-                e.preventDefault()
-                const formData = new FormData(e.currentTarget)
-                // const userIdString = localStorage.getItem("idUser")
-                // const newTask= {
-                //   idUser: userIdString ? parseInt(userIdString) : 0,
-                //   title: (formData.get('title') as string)?.trim(),
-                //   description: (formData.get('description') as string)?.trim(),
-                //   priority: (formData.get('prioridade') as string),
-                // }
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
                 const newTask: Task = {
                   id: editingTask?.id || Date.now(),
                   title: (formData.get('title') as string)?.trim(),
@@ -196,8 +249,9 @@ export default function CadastroDeTarefa() {
                   prioridade: (formData.get('prioridade') as string)?.trim(),
                   completed: false,
                   isDaily: formData.get('isDaily') === 'on',
+                  status: ''
                 };
-                addOrUpdateTask(newTask)
+                addOrUpdateTask(newTask);
               }}>
                 <div className="space-y-4">
                   <div>
@@ -232,7 +286,7 @@ export default function CadastroDeTarefa() {
           </Dialog>
           <Button variant="outline" onClick={resetDailyTasks}>
             <RefreshCw className="mr-2 h-4 w-4" />
-            Resetar Tarefas Diárias
+            Resetar Tarefas
           </Button>
         </div>
 
@@ -260,7 +314,7 @@ export default function CadastroDeTarefa() {
               )}
               {tasks.length > 0 && (
                 <div>
-                  <h2 className="text-lg font-semibold mb-2">Outras Tarefas</h2>
+                  <h2 className="text-lg font-semibold mb-2">Tarefas</h2>
                   {tasks.map((task) => (
                     <TaskItem
                       key={task.id}
