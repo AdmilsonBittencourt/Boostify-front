@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
 import { getAllTasksByUserId, createTask, deleteTask as deleteTaskService, alterStatusTask, alterTask } from "@/services/tasksService"
+import useAxiosWithToken from "@/hooks/useAxiosWithToken"
 
 interface Task {
   id: number;
@@ -89,12 +90,13 @@ export default function CadastroDeTarefa() {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const userIdString = localStorage.getItem("userId");
-    const userId = userIdString ? parseInt(userIdString) : 1;
+  useAxiosWithToken();
+  
+  let userId: number = 0;
 
   useEffect(() => {
     const userIdString = localStorage.getItem("userId");
-    const userId = userIdString ? parseInt(userIdString) : 1;
+    userId = userIdString ? parseInt(userIdString) : 1;
 
     getAllTasksByUserId(userId)
       .then(response => {

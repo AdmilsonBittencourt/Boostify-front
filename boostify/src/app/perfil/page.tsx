@@ -8,6 +8,7 @@ import User from "@/models/user";
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from "lucide-react";
 import HeaderHome from "@/components/headerHome";
+import useAxiosWithToken from "@/hooks/useAxiosWithToken";
 
 const ProfilePage = () => {
   const router = useRouter();
@@ -17,9 +18,14 @@ const ProfilePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: "", email: "" });
 
-  const userIdString = localStorage.getItem("userId");
-    const userId = userIdString ? parseInt(userIdString) : 1;
+  useAxiosWithToken();
+
+  let userId: number = 0;
+  
   useEffect(() => {
+
+    const userIdString = localStorage.getItem("userId");
+    userId = userIdString ? parseInt(userIdString) : 1;
     const fetchUser = async () => {
       try {
         const userData = await getUserById(userId);
