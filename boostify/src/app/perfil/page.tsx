@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft } from "lucide-react";
 import HeaderHome from "@/components/headerHome";
 import useAxiosWithToken from "@/hooks/useAxiosWithToken";
+import useUserId from "@/hooks/useUserId";
 
 const ProfilePage = () => {
   const router = useRouter();
@@ -20,12 +21,9 @@ const ProfilePage = () => {
 
   useAxiosWithToken();
 
-  let userId: number = 0;
+  const userId = useUserId();
   
   useEffect(() => {
-
-    const userIdString = localStorage.getItem("userId");
-    userId = userIdString ? parseInt(userIdString) : 1;
     const fetchUser = async () => {
       try {
         const userData = await getUserById(userId);
