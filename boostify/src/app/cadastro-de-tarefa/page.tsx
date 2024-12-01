@@ -91,12 +91,12 @@ export default function CadastroDeTarefa() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   useAxiosWithToken();
-  const userIdString = localStorage.getItem("userId");
-    const userId = userIdString ? parseInt(userIdString) : 1;
+  
+  let userId: number = 0;
 
   useEffect(() => {
     const userIdString = localStorage.getItem("userId");
-    const userId = userIdString ? parseInt(userIdString) : 1;
+    userId = userIdString ? parseInt(userIdString) : 1;
 
     getAllTasksByUserId(userId)
       .then(response => {

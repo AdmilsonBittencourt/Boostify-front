@@ -19,9 +19,13 @@ const ProfilePage = () => {
   const [formData, setFormData] = useState({ name: "", email: "" });
 
   useAxiosWithToken();
-  const userIdString = localStorage.getItem("userId");
-    const userId = userIdString ? parseInt(userIdString) : 1;
+
+  let userId: number = 0;
+  
   useEffect(() => {
+
+    const userIdString = localStorage.getItem("userId");
+    userId = userIdString ? parseInt(userIdString) : 1;
     const fetchUser = async () => {
       try {
         const userData = await getUserById(userId);
