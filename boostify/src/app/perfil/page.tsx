@@ -5,8 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 import User from "@/models/user";
+import { useRouter } from 'next/navigation';
+import { ArrowLeft } from "lucide-react";
+import HeaderHome from "@/components/headerHome";
 
 const ProfilePage = () => {
+  const router = useRouter();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,6 +57,7 @@ const ProfilePage = () => {
 
   return (
     <Card>
+      <HeaderHome />
       <CardHeader>
         <h2>Perfil do Usuário</h2>
       </CardHeader>
@@ -77,8 +82,12 @@ const ProfilePage = () => {
         </form>
       </CardContent>
       <CardFooter>
-        <Button variant="outline" onClick={() => alert("Cancelado")}>
-          Cancelar
+        <Button 
+          variant="outline" 
+          onClick={() => router.push('/home')} // Redirecionando para a página inicial
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" /> {/* Ícone de seta */}
+          Voltar
         </Button>
       </CardFooter>
     </Card>

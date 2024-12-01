@@ -1,7 +1,10 @@
+'use client';
+
 import { MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { User, Home, Settings } from "lucide-react";
+import Link from 'next/link';
 
 export default function HeaderHome(){
     return (
@@ -16,12 +19,16 @@ export default function HeaderHome(){
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuItem>
-                        <Home className="mr-2 h-4 w-4" />
-                        <span>Início</span>
+                        <Link href="/home" className="flex items-center">
+                            <Home className="mr-2 h-4 w-4" />
+                            <span>Início</span>
+                        </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                        <User className="mr-2 h-4 w-4" />
-                        <span>Perfil</span>
+                        <Link href="/perfil" className="flex items-center">
+                            <User className="mr-2 h-4 w-4" />
+                            <span>Perfil</span>
+                        </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
                         <Settings className="mr-2 h-4 w-4" />
