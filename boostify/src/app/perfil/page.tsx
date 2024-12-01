@@ -8,7 +8,6 @@ import User from "@/models/user";
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from "lucide-react";
 import HeaderHome from "@/components/headerHome";
-import useAxiosWithToken from "@/hooks/useAxiosWithToken";
 import useUserId from "@/hooks/useUserId";
 
 const ProfilePage = () => {
@@ -19,22 +18,24 @@ const ProfilePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: "", email: "" });
 
-  useAxiosWithToken();
+  
 
   const userId = useUserId();
   
   useEffect(() => {
     const fetchUser = async () => {
-      try {
-        const userData = await getUserById(userId);
-        setUser(userData);
-        setFormData({ name: userData.name, email: userData.email });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (err: unknown) {
-        setError("Erro ao carregar os dados do usuário.");
-      } finally {
-        setLoading(false);
-      }
+        if (userId) {
+            try {
+                const userData = await getUserById(userId);
+                setUser(userData);
+                setFormData({ name: userData.name, email: userData.email });
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            } catch (err: unknown) {
+                setError("Erro ao carregar os dados do usuário.");
+            } finally {
+                setLoading(false);
+            }
+        }
     };
 
     fetchUser();
