@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
 import { getAllTasksByUserId, createTask, deleteTask as deleteTaskService, alterStatusTask, alterTask } from "@/services/tasksService"
 import useAxiosWithToken from "@/hooks/useAxiosWithToken"
+import useUserId from "@/hooks/useUserId"
 
 interface Task {
   id: number;
@@ -92,12 +93,9 @@ export default function CadastroDeTarefa() {
 
   useAxiosWithToken();
   
-  let userId: number = 0;
+  const userId = useUserId();
 
   useEffect(() => {
-    const userIdString = localStorage.getItem("userId");
-    userId = userIdString ? parseInt(userIdString) : 1;
-
     getAllTasksByUserId(userId)
       .then(response => {
         console.log(response);
