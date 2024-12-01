@@ -32,7 +32,7 @@ export const createTask = async (task: { idUser: number; title: string; descript
  * @param updatedTask Dados atualizados da tarefa.
  * @returns A tarefa atualizada.
  */
-export const alterTask = async (taskId: number, updatedTask: { title?: string; description?: string; dueDate?: string; priority?: string }) => {
+export const alterTask = async (taskId: number, updatedTask: { idUser: number; title: string; description?: string; priority?: string }) => {
     try {
         const response = await api.put(`/tasks/${taskId}`, updatedTask);
         return response.data;

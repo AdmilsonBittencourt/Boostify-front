@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import { Switch } from "@/components/ui/switch"
-import { getAllTasksByUserId, createTask, deleteTask as deleteTaskService, alterStatusTask } from "@/services/tasksService"
+import { getAllTasksByUserId, createTask, deleteTask as deleteTaskService, alterStatusTask, alterTask } from "@/services/tasksService"
 
 interface Task {
   id: number;
@@ -108,28 +108,37 @@ export default function CadastroDeTarefa() {
 
   const addOrUpdateTask = async (task: Task) => {
     if (!task.title.trim()) {
-      return;
+        return;
     }
-    
+
     const priorityMap: { [key: string]: string } = {
-      baixa: 'LOW',
-      media: 'AVERAGE',
-      alta: 'HIGH',
+        baixa: 'LOW',
+        media: 'AVERAGE',
+        alta: 'HIGH',
     };
 
     const taskWithId = {
-      idUser: userId,
-      title: task.title,
-      description: task.description,
-      priority: priorityMap[task.prioridade] || 'LOW',
-      status: task.status
+        idUser: userId,
+        title: task.title,
+        description: task.description,
+        priority: priorityMap[task.prioridade] || 'LOW',
+        status: task.status
     };
 
     try {
-      const createdTask = await createTask(taskWithId);
-      setTasks(prev => [...prev, createdTask]);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { status, ...taskWithoutStatus } = taskWithId;
+        if (editingTask) {
+            // Se estamos editando uma tarefa, chamamos alterTask
+            const updatedTask = await alterTask(editingTask.id, taskWithoutStatus);
+            setTasks(prev => prev.map(t => (t.id === updatedTask.id ? updatedTask : t)));
+        } else {
+            // Se estamos criando uma nova tarefa, chamamos createTask
+            const createdTask = await createTask(taskWithoutStatus);
+            setTasks(prev => [...prev, createdTask]);
+        }
     } catch (error) {
-      console.error("Erro ao criar a task:", error);
+        console.error("Erro ao salvar a task:", error);
     }
 
     setIsDialogOpen(false);
@@ -198,7 +207,10 @@ export default function CadastroDeTarefa() {
         <div className="flex justify-between items-center mb-4">
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={() => setEditingTask(null)}>
+              <Button onClick={() => {
+                setEditingTask(null);
+                setIsDialogOpen(true);
+              }}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Adicionar Tarefa
               </Button>
@@ -208,15 +220,8 @@ export default function CadastroDeTarefa() {
                 <DialogTitle>{editingTask ? 'Editar Tarefa' : 'Adicionar Nova Tarefa'}</DialogTitle>
               </DialogHeader>
               <form onSubmit={(e: React.FormEvent<HTMLFormElement>) => {
-                e.preventDefault()
-                const formData = new FormData(e.currentTarget)
-                // const userIdString = localStorage.getItem("idUser")
-                // const newTask= {
-                //   idUser: userIdString ? parseInt(userIdString) : 0,
-                //   title: (formData.get('title') as string)?.trim(),
-                //   description: (formData.get('description') as string)?.trim(),
-                //   priority: (formData.get('prioridade') as string),
-                // }
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
                 const newTask: Task = {
                   id: editingTask?.id || Date.now(),
                   title: (formData.get('title') as string)?.trim(),
@@ -226,7 +231,7 @@ export default function CadastroDeTarefa() {
                   isDaily: formData.get('isDaily') === 'on',
                   status: ''
                 };
-                addOrUpdateTask(newTask)
+                addOrUpdateTask(newTask);
               }}>
                 <div className="space-y-4">
                   <div>
