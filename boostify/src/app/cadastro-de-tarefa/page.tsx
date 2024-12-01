@@ -94,21 +94,27 @@ export default function CadastroDeTarefa() {
   useAxiosWithToken();
   
   const userId = useUserId();
+  console.log("user id = ", userId);
 
   useEffect(() => {
-    getAllTasksByUserId(userId)
-      .then(response => {
-        console.log(response);
-        const updatedTasks = response.map((task: { status: TaskStatus }) => ({
-          ...task,
-          completed: task.status === TaskStatus.COMPLETED
-        }));
-        setTasks(updatedTasks);
-      })
-      .catch(error => {
-        console.error("Erro ao buscar a task:", error);
-      });
-  }, []);
+    const fetchTasks = async () => {
+        if (userId) { // Verifica se userId é válido
+            try {
+                const response = await getAllTasksByUserId(userId);
+                console.log(response);
+                const updatedTasks = response.map((task: { status: TaskStatus }) => ({
+                    ...task,
+                    completed: task.status === TaskStatus.COMPLETED
+                }));
+                setTasks(updatedTasks);
+            } catch (error) {
+                console.error("Erro ao buscar a task:", error);
+            }
+        }
+    };
+
+    fetchTasks(); // Chama a função para buscar as tarefas
+  }, [userId]); // userId como dependência
 
   const addOrUpdateTask = async (task: Task) => {
     if (!task.title.trim()) {
