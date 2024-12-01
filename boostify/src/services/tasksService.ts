@@ -16,7 +16,7 @@ export const getAllTasksByUserId = async (userId: number) => {
  * @param task Dados da tarefa a ser criada.
  * @returns A tarefa criada.
  */
-export const createTask = async (task: { idUser: number; title: string; description?: string; priority?: string }) => {
+export const createTask = async (task: { idUser: number; title: string; description?: string; priority?: string, isDaily: boolean }) => {
     try {
         const response = await api.post('/tasks', task);
         return response.data;
@@ -32,7 +32,7 @@ export const createTask = async (task: { idUser: number; title: string; descript
  * @param updatedTask Dados atualizados da tarefa.
  * @returns A tarefa atualizada.
  */
-export const alterTask = async (taskId: number, updatedTask: { idUser: number; title: string; description?: string; priority?: string }) => {
+export const alterTask = async (taskId: number, updatedTask: { idUser: number; title: string; description?: string; priority?: string, isDaily: boolean }) => {
     try {
         const response = await api.put(`/tasks/${taskId}`, updatedTask);
         return response.data;

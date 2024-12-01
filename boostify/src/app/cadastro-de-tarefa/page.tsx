@@ -99,7 +99,11 @@ export default function CadastroDeTarefa() {
     getAllTasksByUserId(userId)
       .then(response => {
         console.log(response);
-        setTasks(response);
+        const updatedTasks = response.map((task: { status: TaskStatus }) => ({
+          ...task,
+          completed: task.status === TaskStatus.COMPLETED
+        }));
+        setTasks(updatedTasks);
       })
       .catch(error => {
         console.error("Erro ao buscar a task:", error);
@@ -122,9 +126,10 @@ export default function CadastroDeTarefa() {
         title: task.title,
         description: task.description,
         priority: priorityMap[task.prioridade] || 'LOW',
-        status: task.status
+        status: task.status,
+        isDaily: task.isDaily
     };
-
+    
     try {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { status, ...taskWithoutStatus } = taskWithId;
@@ -181,8 +186,23 @@ export default function CadastroDeTarefa() {
     }
   };
 
-  const resetDailyTasks = () => {
-    setDailyTasks(dailyTasks.map(task => ({ ...task, completed: false })))
+  const resetDailyTasks = async () => {
+
+    // 2. Alterar o status das tasks que estão COMPLETED para PENDING e desmarcar o checkbox
+    const updatedTasks = await Promise.all(tasks.map(async task => {
+      if (task.completed) {
+          await alterStatusTask(task.id, TaskStatus.PENDING);
+          return { ...task, completed: false, status: TaskStatus.PENDING };
+      }
+      return task;
+  }));
+
+    // 1. Deletar todas as tasks que não possuem o atributo isDaily true
+    const tasksToDelete = tasks.filter(task => !task.isDaily);
+    await Promise.all(tasksToDelete.map(task => deleteTaskService(task.id)));
+
+    // Atualiza o estado com as tarefas filtradas e atualizadas
+    setTasks(updatedTasks.filter(task => task.isDaily)); // Mantém apenas as tarefas diárias
   }
 
   const allTasks = [...tasks, ...dailyTasks]
@@ -266,7 +286,7 @@ export default function CadastroDeTarefa() {
           </Dialog>
           <Button variant="outline" onClick={resetDailyTasks}>
             <RefreshCw className="mr-2 h-4 w-4" />
-            Resetar Tarefas Diárias
+            Resetar Tarefas
           </Button>
         </div>
 
@@ -294,7 +314,7 @@ export default function CadastroDeTarefa() {
               )}
               {tasks.length > 0 && (
                 <div>
-                  <h2 className="text-lg font-semibold mb-2">Outras Tarefas</h2>
+                  <h2 className="text-lg font-semibold mb-2">Tarefas</h2>
                   {tasks.map((task) => (
                     <TaskItem
                       key={task.id}

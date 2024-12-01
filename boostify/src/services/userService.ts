@@ -28,7 +28,7 @@ export const register = async (userData: User) => {
   }
 };
 
-export const updateUser = async (id: number, userData: User) => {
+export const updateUser = async (id: number, userData: {name: string, email: string}) => {
 
   try {
     await api.put(`/users/${id}`, userData);
