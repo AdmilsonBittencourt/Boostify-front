@@ -29,7 +29,6 @@ interface Task {
 enum TaskStatus {
     COMPLETED = "COMPLETED",
     PENDING = "PENDING",
-    IN_PROGRESS = "IN_PROGRESS",
 }
 
 function TaskItem({ task, onEdit, onDelete, onToggle }: {
@@ -59,11 +58,12 @@ function TaskItem({ task, onEdit, onDelete, onToggle }: {
           <p className="text-sm text-muted-foreground">{task.description}</p>
           <div className="flex items-center space-x-2">
             <span className={`text-xs px-2 py-1 rounded-full ${
-              task.prioridade === 'alta' ? 'bg-red-100 text-red-800' :
-              task.prioridade === 'media' ? 'bg-yellow-100 text-yellow-800' :
+              task.prioridade === 'HIGH' ? 'bg-red-100 text-red-800' :
+              task.prioridade === 'AVERAGE' ? 'bg-yellow-100 text-yellow-800' :
               'bg-green-100 text-green-800'
             }`}>
-              {task.prioridade}
+              {task.prioridade === 'HIGH' ? 'Alta' : task.prioridade === 'AVERAGE' ? 'Média' :
+              'Baixa'}
             </span>
             {task.isDaily && (
               <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
@@ -101,11 +101,12 @@ export default function CadastroDeTarefa() {
         if (userId) { // Verifica se userId é válido
             try {
                 const response = await getAllTasksByUserId(userId);
-                console.log(response);
-                const updatedTasks = response.map((task: { status: TaskStatus }) => ({
+                const updatedTasks = response.map((task: { status: TaskStatus, priority: string }) => ({
                     ...task,
-                    completed: task.status === TaskStatus.COMPLETED
+                    completed: task.status === TaskStatus.COMPLETED,
+                    prioridade: task.priority
                 }));
+                console.log('quero aqui', updatedTasks);
                 setTasks(updatedTasks);
             } catch (error) {
                 console.error("Erro ao buscar a task:", error);
@@ -142,11 +143,11 @@ export default function CadastroDeTarefa() {
         if (editingTask) {
             // Se estamos editando uma tarefa, chamamos alterTask
             const updatedTask = await alterTask(editingTask.id, taskWithoutStatus);
-            setTasks(prev => prev.map(t => (t.id === updatedTask.id ? updatedTask : t)));
+            setTasks(prev => prev.map(t => (t.id === updatedTask.id ? { ...updatedTask, prioridade: updatedTask.priority } : t)));
         } else {
             // Se estamos criando uma nova tarefa, chamamos createTask
             const createdTask = await createTask(taskWithoutStatus);
-            setTasks(prev => [...prev, createdTask]);
+            setTasks(prev => [...prev, { ...createdTask, prioridade: createdTask.priority }]);
         }
     } catch (error) {
         console.error("Erro ao salvar a task:", error);
