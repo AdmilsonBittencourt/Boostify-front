@@ -3,12 +3,13 @@ import React, { useEffect, useState } from "react";
 import { getUserById, updateUser } from "@/services/userService";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardFooter } from "@/components/ui/card";
 import User from "@/models/user";
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from "lucide-react";
 import HeaderHome from "@/components/headerHome";
 import useUserId from "@/hooks/useUserId";
+import useAxiosWithToken from "@/hooks/useAxiosWithToken";
 
 const ProfilePage = () => {
   const router = useRouter();
@@ -18,8 +19,7 @@ const ProfilePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({ name: "", email: "" });
 
-  
-
+  useAxiosWithToken();
   const userId = useUserId();
   
   useEffect(() => {
@@ -61,41 +61,41 @@ const ProfilePage = () => {
   if (error) return <div>{error}</div>;
 
   return (
-    <Card>
-      <HeaderHome />
-      <CardHeader>
-        <h2>Perfil do Usuário</h2>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit}>
-          <Input
-            name="name"
-            label="Nome"
-            value={formData.name}
-            onChange={handleChange}
-            required
-          />
-          <Input
-            name="email"
-            label="Email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-          <Button type="submit">Salvar Alterações</Button>
-        </form>
-      </CardContent>
-      <CardFooter>
-        <Button 
-          variant="outline" 
-          onClick={() => router.push('/home')} // Redirecionando para a página inicial
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" /> {/* Ícone de seta */}
-          Voltar
-        </Button>
-      </CardFooter>
-    </Card>
+    <>
+        <HeaderHome />
+            <Card className="max-w-[600px] mx-auto min-h-auto bg-background p-4 mt-16"> {/* Centralizando o conteúdo */}
+            <CardHeader>
+                <h2 className="text-xl font-bold">Perfil do Usuário</h2>
+            </CardHeader>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4"> {/* Centralizando apenas o formulário */}
+                <Input
+                    name="name"
+                    label="Nome"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                />
+                <Input
+                    name="email"
+                    label="Email"
+                    type="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                />
+                <Button type="submit">Salvar Alterações</Button>
+                </form>
+            <CardFooter className="mt-8">
+                <Button
+                variant="outline" 
+                onClick={() => router.push('/home')} // Redirecionando para a página inicial
+                >
+                <ArrowLeft className="h-4 w-4" /> {/* Ícone de seta */}
+                Voltar
+                </Button>
+            </CardFooter>
+            </Card>
+    </>
   );
 };
 
